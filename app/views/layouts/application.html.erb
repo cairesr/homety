@@ -5,51 +5,79 @@
 	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 	    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<script type="text/javascript"
-		  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWj-JXeWf9zbWGk-_XTkGdmTstvQhmvSU">
-		</script>
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places&key=AIzaSyDWj-JXeWf9zbWGk-_XTkGdmTstvQhmvSU"></script>
 		<script type="text/javascript">
 		  function initialize() {
-	        var mapOptions = {
-			  zoom: 10,
-			    center: new google.maps.LatLng(-23.5037421, -46.844028),
-			    mapTypeId: google.maps.MapTypeId.TERRAIN
-			  };
 
-			  var map = new google.maps.Map(document.getElementById('map-canvas'),
-			      mapOptions);
-
-			  var pathPlanCoordinates = [
-			    new google.maps.LatLng(-23.5037421, -46.844028),
-			    new google.maps.LatLng(-23.1856098,-47.3267265),
-			  ];
-
-			  var pathPlanCoordinates2 = [
-			    new google.maps.LatLng(-23.1116204,-47.1944284),
-			    new google.maps.LatLng(-23.5037421,-46.844028)
-			  ]
-
-			  var pathOne = new google.maps.Polyline({
-			    path: pathPlanCoordinates,
-			    geodesic: true,
-			    strokeColor: '#FF0000',
-			    strokeOpacity: 1.0,
-			    strokeWeight: 2
+			  var markers = [];
+			  var map = new google.maps.Map(document.getElementById('map-canvas'), {
+			    mapTypeId: google.maps.MapTypeId.ROADMAP
 			  });
 
-			  var pathTwo = new google.maps.Polyline({
-			  	path: pathPlanCoordinates2,
-			  	geodesic: true,
-			  	strokeColor: '#FF0000',
-			  	strokeOpacity: 1.0,
-			  	strokeWeight: 2
+			  var defaultBounds = new google.maps.LatLngBounds(
+			      new google.maps.LatLng(-23.1772377,-47.3251997),
+			      new google.maps.LatLng(-23.2196102,-47.2785018)
+			  );
+
+			  map.fitBounds(defaultBounds);
+
+			  // Create the search box and link it to the UI element.
+			  var input = /** @type {HTMLInputElement} */(
+			      document.getElementById('pac-input'));
+			  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+			  var searchBox = new google.maps.places.SearchBox(
+			    /** @type {HTMLInputElement} */(input));
+
+			  // Listen for the event fired when the user selects an item from the
+			  // pick list. Retrieve the matching places for that item.
+			  google.maps.event.addListener(searchBox, 'places_changed', function() {
+			    var places = searchBox.getPlaces();
+
+			    if (places.length == 0) {
+			      return;
+			    }
+			    for (var i = 0, marker; marker = markers[i]; i++) {
+			      marker.setMap(null);
+			    }
+
+			    // For each place, get the icon, place name, and location.
+			    markers = [];
+			    var bounds = new google.maps.LatLngBounds();
+			    for (var i = 0, place; place = places[i]; i++) {
+			      var image = {
+			        url: place.icon,
+			        size: new google.maps.Size(71, 71),
+			        origin: new google.maps.Point(0, 0),
+			        anchor: new google.maps.Point(17, 34),
+			        scaledSize: new google.maps.Size(25, 25)
+			      };
+
+			      // Create a marker for each place.
+			      var marker = new google.maps.Marker({
+			        map: map,
+			        icon: image,
+			        title: place.name,
+			        position: place.geometry.location
+			      });
+
+			      markers.push(marker);
+
+			      bounds.extend(place.geometry.location);
+			    }
+
+			    map.fitBounds(bounds);
 			  });
 
-			  pathOne.setMap(map);
-			  pathTwo.setMap(map);
-		  }
+			  // Bias the SearchBox results towards places that are within the bounds of the
+			  // current map's viewport.
+			  google.maps.event.addListener(map, 'bounds_changed', function() {
+			    var bounds = map.getBounds();
+			    searchBox.setBounds(bounds);
+			  });
+			}
 
-		  google.maps.event.addDomListener(window, 'load', initialize);
+			google.maps.event.addDomListener(window, 'load', initialize);
 		</script>
 
 	 	<title>Homety</title>
@@ -89,6 +117,7 @@
     <div class="container">
 
       <div class="starter-template">
+      	<input id="pac-input" class="controls" type="text" placeholder="Search Box">
         <div id="map-canvas"></div>
       </div>
 
