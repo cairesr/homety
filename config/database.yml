@@ -5,12 +5,12 @@ default: &default
 
 development:
   <<: *default
-  database: homety_development
+  database: linetour_development
 
 test:
   <<: *default
-  database: homety_test
+  database: linetour_test
 
 production:
   <<: *default
-  database: homety_production
+  database: linetour_production
